@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disease Prediction</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh; /* Ensure scrolling */
+        }
+
+        /* Background Animations */
+        .background-circle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 20s infinite;
+            z-index: -1;
+        }
+
+        .circle1 {
+            width: 300px;
+            height: 300px;
+            top: 10%;
+            left: 5%;
+            background: rgba(255, 255, 255, 0.2);
+            animation-delay: 0s;
+        }
+
+        .circle2 {
+            width: 400px;
+            height: 400px;
+            bottom: 10%;
+            right: 10%;
+            background: rgba(255, 255, 255, 0.15);
+            animation-delay: 5s;
+        }
+
+        .circle3 {
+            width: 200px;
+            height: 200px;
+            top: 50%;
+            right: 20%;
+            background: rgba(255, 255, 255, 0.1);
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
+            100% {
+                transform: translateY(0) rotate(360deg);
+            }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 30px;
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 1s ease-in-out;
+            overflow: hidden; /* Prevent content overflow */
+        }
+
+        h1 {
+            text-align: center;
+            color: #2575fc;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input[type="text"]:focus {
+            border-color: #2575fc;
+            box-shadow: 0 0 8px rgba(37, 117, 252, 0.5);
+            outline: none;
+        }
+
+        .form-group button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            border: none;
+            color: white;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+        }
+
+        .form-group button:hover {
+            background: linear-gradient(to left, #6a11cb, #2575fc);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(37, 117, 252, 0.5);
+        }
+
+        /* Suggestions Box */
+        #suggestions {
+            position: absolute;
+            width: 100%;
+            background: white;
+            border: 1px solid #ccc;
+            z-index: 1000;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .suggestion-item:hover {
+            background: #f0f0f0;
+        }
+        .error-message {
+          background-color: #ffe6e6; /* Light red background */
+          border: 1px solid #ff4d4d; /* Red border */
+          color: #b30000; /* Dark red text */
+          padding: 10px 15px; /* Add some padding */
+          border-radius: 5px; /* Rounded corners */
+          font-size: 14px; /* Font size for the text */
+          margin-top: 10px; /* Add spacing above the message */
+          line-height: 1.5; /* Improve readability */
+          display: inline-block; /* Fit the content */
+          width: auto; /* Automatically adjust to content width */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for emphasis */
+        }
+
+        .back-to-home {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .back-to-home a {
+            text-decoration: none;
+            color: #fff;
+            font-size: 18px;
+            padding: 10px 20px;
+            border-radius: 30px;
+            background: linear-gradient(to right, #ff9a9e, #fad0c4);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .back-to-home a:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+
+        .results {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .result-section {
+            flex: 1;
+            min-width: 200px;
+            background: rgba(37, 117, 252, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-section h3 {
+            color: #2575fc;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .result-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .result-section ul li {
+            background: rgba(37, 117, 252, 0.1);
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Floating Background Elements -->
+    <div class="background-circle circle1"></div>
+    <div class="background-circle circle2"></div>
+    <div class="background-circle circle3"></div>
+
+    <div class="container">
+        <h1><i class="fas fa-stethoscope"></i> Disease Prediction System</h1>
+        <form action="/predict" method="POST">
+            <div class="form-group">
+                <label for="symptoms">Enter your symptoms (comma-separated):</label>
+                <input type="text" id="symptoms" name="symptoms" placeholder="e.g. itching, skin_rash, fatigue" autocomplete="on" required>
+                <div id="suggestions"></div>
+                <p id="error-message" class="error-message" style="display: none;">Invalid symptoms detected. Please correct them.</p>
+            </div>
+            <div class="form-group">
+                <button type="submit"><i class="fas fa-search"></i> Predict Disease</button>
+            </div>
+            <!-- Back to Home Button -->
+            <div class="back-to-home">
+               <a href="/"><i class="fas fa-home"></i> Back to Home</a>
+            </div>
+
+               <!-- Display Error Message -->
+                {% if message %}
+                <div class="error-message">
+                   <p>{{ message }}</p>
+                </div>
+                {% endif %}
+
+
+            <!-- Results Section -->
+            {% if predicted_disease %}
+            <div class="results">
+                <div class="result-section">
+                    <h3><i class="fas fa-diagnoses"></i> Predicted Disease</h3>
+                    <p>{{ predicted_disease }}</p>
+                </div>
+
+                <div class="result-section">
+                    <h3><i class="fas fa-notes-medical"></i> Description</h3>
+                    <p>{{ dis_des }}</p>
+                </div>
+
+                <div class="result-section">
+                    <h3><i class="fas fa-prescription-bottle-alt"></i> Precautions</h3>
+                    <ul>
+                        {% for precaution in my_precautions %}
+                        <li>{{ precaution }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="result-section">
+                    <h3><i class="fas fa-pills"></i> Medications</h3>
+                    <ul>
+                        {% for med in medications %}
+                        <li>{{ med }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="result-section">
+                    <h3><i class="fas fa-carrot"></i> Recommended Diet</h3>
+                    <ul>
+                        {% for diet in my_diet %}
+                        <li>{{ diet }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="result-section">
+                    <h3><i class="fas fa-dumbbell"></i> Workout Suggestions</h3>
+                    <ul>
+                        {% for wrk in workout %}
+                        <li>{{ wrk }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+
+    <script>
+        const symptomsDict = [
+    'itching', 'skin_rash', 'nodal_skin_eruptions', 'continuous_sneezing', 'shivering', 'chills', 
+    'joint_pain', 'stomach_pain', 'acidity', 'ulcers_on_tongue', 'muscle_wasting', 'vomiting', 
+    'burning_micturition', 'spotting_urination', 'fatigue', 'weight_gain', 'anxiety', 
+    'cold_hands_and_feets', 'mood_swings', 'weight_loss', 'restlessness', 'lethargy', 
+    'patches_in_throat', 'irregular_sugar_level', 'cough', 'high_fever', 'sunken_eyes', 
+    'breathlessness', 'sweating', 'dehydration', 'indigestion', 'headache', 'yellowish_skin', 
+    'dark_urine', 'nausea', 'loss_of_appetite', 'pain_behind_the_eyes', 'back_pain', 'constipation', 
+    'abdominal_pain', 'diarrhoea', 'mild_fever', 'yellow_urine', 'yellowing_of_eyes', 
+    'acute_liver_failure', 'fluid_overload', 'swelling_of_stomach', 'swelled_lymph_nodes', 
+    'malaise', 'blurred_and_distorted_vision', 'phlegm', 'throat_irritation', 'redness_of_eyes', 
+    'sinus_pressure', 'runny_nose', 'congestion', 'chest_pain', 'weakness_in_limbs', 
+    'fast_heart_rate', 'pain_during_bowel_movements', 'pain_in_anal_region', 'bloody_stool', 
+    'irritation_in_anus', 'neck_pain', 'dizziness', 'cramps', 'bruising', 'obesity', 
+    'swollen_legs', 'swollen_blood_vessels', 'puffy_face_and_eyes', 'enlarged_thyroid', 
+    'brittle_nails', 'swollen_extremeties', 'excessive_hunger', 'extra_marital_contacts', 
+    'drying_and_tingling_lips', 'slurred_speech', 'knee_pain', 'hip_joint_pain', 'muscle_weakness', 
+    'stiff_neck', 'swelling_joints', 'movement_stiffness', 'spinning_movements', 'loss_of_balance', 
+    'unsteadiness', 'weakness_of_one_body_side', 'loss_of_smell', 'bladder_discomfort', 
+    'foul_smell_of_urine', 'continuous_feel_of_urine', 'passage_of_gases', 'internal_itching', 
+    'toxic_look_(typhos)', 'depression', 'irritability', 'muscle_pain', 'altered_sensorium', 
+    'red_spots_over_body', 'belly_pain', 'abnormal_menstruation', 'dischromic_patches', 
+    'watering_from_eyes', 'increased_appetite', 'polyuria', 'family_history', 'mucoid_sputum', 
+    'rusty_sputum', 'lack_of_concentration', 'visual_disturbances', 'receiving_blood_transfusion', 
+    'receiving_unsterile_injections', 'coma', 'stomach_bleeding', 'distention_of_abdomen', 
+    'history_of_alcohol_consumption', 'fluid_overload', 'blood_in_sputum', 'prominent_veins_on_calf', 
+    'palpitations', 'painful_walking', 'pus_filled_pimples', 'blackheads', 'scurring', 
+    'skin_peeling', 'silver_like_dusting', 'small_dents_in_nails', 'inflammatory_nails', 
+    'blister', 'red_sore_around_nose', 'yellow_crust_ooze'
+];
+
+const inputField = document.getElementById('symptoms');
+const suggestionsBox = document.getElementById('suggestions');
+const errorMessage = document.getElementById('error-message');
+const form = document.getElementById('symptomForm');
+
+inputField.addEventListener('input', function () {
+    const input = inputField.value.toLowerCase().split(',').pop().trim();
+    suggestionsBox.innerHTML = '';
+    if (input.length > 0) {
+        const filteredSuggestions = symptomsDict.filter(symptom => symptom.includes(input));
+        if (filteredSuggestions.length > 0) {
+            suggestionsBox.style.display = 'block';
+            filteredSuggestions.forEach(function (suggestion) {
+                const div = document.createElement('div');
+                div.textContent = suggestion;
+                div.classList.add('suggestion-item');
+                div.addEventListener('click', function () {
+                    let currentSymptoms = inputField.value.split(',').map(item => item.trim());
+                    currentSymptoms.pop();
+                    currentSymptoms.push(suggestion);
+                    inputField.value = currentSymptoms.join(', ');
+                    suggestionsBox.innerHTML = '';
+                    suggestionsBox.style.display = 'none';
+                });
+                suggestionsBox.appendChild(div);
+            });
+        } else {
+            suggestionsBox.style.display = 'none';
+        }
+    } else {
+        suggestionsBox.style.display = 'none';
+    }
+});
+
+form.addEventListener('submit', function (e) {
+    const enteredSymptoms = inputField.value.split(',').map((symptom) => symptom.trim().toLowerCase());
+    const invalidSymptoms = enteredSymptoms.filter(symptom => !symptomsDict.includes(symptom));
+
+    if (invalidSymptoms.length > 0) {
+        e.preventDefault(); // Prevent form submission
+        errorMessage.style.display = 'block';
+        errorMessage.textContent = `Invalid symptoms detected: ${invalidSymptoms.join(', ')}. Please correct them.`;
+    } else {
+        errorMessage.style.display = 'none';
+    }
+});
+
+document.addEventListener('click', function (event) {
+    if (!suggestionsBox.contains(event.target) && event.target !== inputField) {
+        suggestionsBox.innerHTML = '';
+        suggestionsBox.style.display = 'none';
+    }
+});
+
+</script>
+</body>
+
+</html>
